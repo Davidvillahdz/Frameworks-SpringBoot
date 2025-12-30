@@ -1,83 +1,74 @@
 package ec.edu.ups.icc.fundamentos01.products.services;
 
+import ec.edu.ups.icc.fundamentos01.exception.domain.ConflictException;
+import ec.edu.ups.icc.fundamentos01.exception.domain.NotFoundException;
 import ec.edu.ups.icc.fundamentos01.products.dtos.*;
 import ec.edu.ups.icc.fundamentos01.products.entities.Product;
-import ec.edu.ups.icc.fundamentos01.products.mappers.ProductMapper;
+import ec.edu.ups.icc.fundamentos01.products.repositories.ProductRepository;
 import org.springframework.stereotype.Service;
-
-import java.util.ArrayList;
 import java.util.List;
 
 @Service
 public class ProductServiceImpl implements ProductService {
 
-    private List<Product> products = new ArrayList<>();
-    private int currentId = 1;
+    private final ProductRepository repository;
+
+    public ProductServiceImpl(ProductRepository repository) {
+        this.repository = repository;
+    }
 
     @Override
     public List<ProductResponseDto> findAll() {
-        return products.stream().map(ProductMapper::toResponse).toList();
+        return repository.findAll().stream()
+                .map(Product::fromEntity).map(Product::toResponseDto).toList();
     }
 
     @Override
     public Object findOne(int id) {
-        return products.stream()
-                .filter(p -> p.getId() == id)
-                .findFirst()
-                .map(ProductMapper::toResponse)
-                .orElseGet(null);
+        return repository.findById((long) id)
+                .map(Product::fromEntity).map(Product::toResponseDto)
+                .orElseThrow(() -> new NotFoundException("Producto no encontrado con ID: " + id));
     }
 
     @Override
     public ProductResponseDto create(CreateProductDto dto) {
-        Product newProduct = ProductMapper.toEntity(currentId++, dto);
-        products.add(newProduct);
-        return ProductMapper.toResponse(newProduct);
+        if (repository.findByName(dto.name).isPresent()) {
+            throw new ConflictException("Ya existe un producto con el nombre: " + dto.name);
+        }
+
+        Product product = Product.fromDto(dto);
+        var savedEntity = repository.save(product.toEntity());
+        return Product.fromEntity(savedEntity).toResponseDto();
     }
 
     @Override
     public Object update(int id, UpdateProductDto dto) {
-        Product product = products.stream().filter(p -> p.getId() == id).findFirst().orElse(null);
-        if (product == null)
-            return new Object() {
-                public String error = "Product not found";
-            };
-
-        product.setName(dto.name);
-        product.setDescription(dto.description);
-        product.setPrice(dto.price);
-
-        return ProductMapper.toResponse(product);
+        return repository.findById((long) id)
+                .map(Product::fromEntity)
+                .map(p -> p.update(dto))
+                .map(Product::toEntity)
+                .map(repository::save)
+                .map(Product::fromEntity).map(Product::toResponseDto)
+                .orElseThrow(() -> new NotFoundException("Producto no encontrado para actualizar"));
     }
 
     @Override
     public Object partialUpdate(int id, PartialUpdateProductDto dto) {
-        Product product = products.stream().filter(p -> p.getId() == id).findFirst().orElse(null);
-        if (product == null)
-            return new Object() {
-                public String error = "Product not found";
-            };
-
-        if (dto.name != null)
-            product.setName(dto.name);
-        if (dto.description != null)
-            product.setDescription(dto.description);
-        if (dto.price != null)
-            product.setPrice(dto.price);
-
-        return ProductMapper.toResponse(product);
+        return repository.findById((long) id)
+                .map(Product::fromEntity)
+                .map(p -> p.partialUpdate(dto))
+                .map(Product::toEntity)
+                .map(repository::save)
+                .map(Product::fromEntity).map(Product::toResponseDto)
+                .orElseThrow(() -> new NotFoundException("Producto no encontrado para actualizar"));
     }
 
     @Override
     public Object delete(int id) {
-        boolean removed = products.removeIf(p -> p.getId() == id);
-        if (!removed)
-            return new Object() {
-                public String error = "Product not found";
-            };
-
-        return new Object() {
-            public String message = "Product deleted successfully";
-        };
+        if (!repository.existsById((long) id)) {
+            throw new NotFoundException("No se puede eliminar. Producto no encontrado con ID: " + id);
+        }
+        repository.deleteById((long) id);
+        return "Deleted successfully";
     }
 }

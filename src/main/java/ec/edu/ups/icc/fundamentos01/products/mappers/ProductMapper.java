@@ -7,7 +7,8 @@ import ec.edu.ups.icc.fundamentos01.products.entities.Product;
 public class ProductMapper {
 
     public static Product toEntity(int id, CreateProductDto dto) {
-        return new Product(id, dto.name, dto.description, dto.price);
+
+        return new Product(id, dto.name, dto.description, dto.price, 0);
     }
 
     public static ProductResponseDto toResponse(Product product) {

@@ -2,6 +2,8 @@ package ec.edu.ups.icc.fundamentos01.users.controllers;
 
 import ec.edu.ups.icc.fundamentos01.users.dtos.*;
 import ec.edu.ups.icc.fundamentos01.users.services.UserService;
+import jakarta.validation.Valid;
+
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
@@ -26,12 +28,12 @@ public class UsersController {
     }
 
     @PostMapping
-    public UserResponseDto create(@RequestBody CreateUserDto dto) {
+    public UserResponseDto create(@Valid @RequestBody CreateUserDto dto) {
         return service.create(dto);
     }
 
     @PutMapping("/{id}")
-    public Object update(@PathVariable int id, @RequestBody UpdateUserDto dto) {
+    public Object update(@PathVariable int id, @Valid @RequestBody UpdateUserDto dto) {
         return service.update(id, dto);
     }
 
