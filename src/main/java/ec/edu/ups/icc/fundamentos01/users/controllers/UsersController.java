@@ -31,6 +31,7 @@ public class UsersController {
 
     }
 
+    @GetMapping("/{id}/products-v2")
     public ResponseEntity<List<ProductResponseDto>> getUserProductsWithFilters(
             @PathVariable("id") Long id,
             @RequestParam(required = false) String name,
