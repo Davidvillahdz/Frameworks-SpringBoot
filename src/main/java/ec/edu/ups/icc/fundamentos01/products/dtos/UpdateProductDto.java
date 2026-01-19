@@ -1,5 +1,7 @@
 package ec.edu.ups.icc.fundamentos01.products.dtos;
 
+import java.util.Set;
+
 import jakarta.validation.constraints.*;
 
 public class UpdateProductDto {
@@ -12,6 +14,7 @@ public class UpdateProductDto {
     @Min(0)
     public double price;
 
-    @Min(0)
-    public int stock;
+    @NotNull(message = "El ID de la categoría es obligatorio")
+    public Set<Long> categoryIds;
+
 }

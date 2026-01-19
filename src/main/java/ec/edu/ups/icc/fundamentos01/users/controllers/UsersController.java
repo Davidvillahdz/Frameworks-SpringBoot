@@ -1,9 +1,11 @@
 package ec.edu.ups.icc.fundamentos01.users.controllers;
 
+import ec.edu.ups.icc.fundamentos01.products.dtos.ProductResponseDto;
 import ec.edu.ups.icc.fundamentos01.users.dtos.*;
 import ec.edu.ups.icc.fundamentos01.users.services.UserService;
 import jakarta.validation.Valid;
 
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
@@ -11,39 +13,41 @@ import java.util.List;
 @RequestMapping("/api/users")
 public class UsersController {
 
-    private final UserService service;
+    private final UserService userService;
 
-    public UsersController(UserService service) {
-        this.service = service;
+    public UsersController(UserService userService) {
+        this.userService = userService;
     }
 
     @GetMapping
     public List<UserResponseDto> findAll() {
-        return service.findAll();
+        return userService.findAll();
     }
 
-    @GetMapping("/{id}")
-    public Object findOne(@PathVariable int id) {
-        return service.findOne(id);
+    @GetMapping("/{id}/products")
+    public ResponseEntity<List<ProductResponseDto>> getProductsByUserId(@PathVariable Long id) {
+        List<ProductResponseDto> products = userService.getProductsByUserId(id);
+        return ResponseEntity.ok(products);
+
     }
 
     @PostMapping
     public UserResponseDto create(@Valid @RequestBody CreateUserDto dto) {
-        return service.create(dto);
+        return userService.create(dto);
     }
 
     @PutMapping("/{id}")
     public Object update(@PathVariable int id, @Valid @RequestBody UpdateUserDto dto) {
-        return service.update(id, dto);
+        return userService.update(id, dto);
     }
 
     @PatchMapping("/{id}")
     public Object partialUpdate(@PathVariable int id, @RequestBody PartialUpdateUserDto dto) {
-        return service.partialUpdate(id, dto);
+        return userService.partialUpdate(id, dto);
     }
 
     @DeleteMapping("/{id}")
     public Object delete(@PathVariable int id) {
-        return service.delete(id);
+        return userService.delete(id);
     }
 }
