@@ -31,6 +31,17 @@ public class UsersController {
 
     }
 
+    public ResponseEntity<List<ProductResponseDto>> getUserProductsWithFilters(
+            @PathVariable("id") Long id,
+            @RequestParam(required = false) String name,
+            @RequestParam(required = false) Double minPrice,
+            @RequestParam(required = false) Double maxPrice,
+            @RequestParam(required = false) Long categoryId) {
+        List<ProductResponseDto> products = userService.getProductsByUserIdWithFilters(
+                id, name, minPrice, maxPrice, categoryId);
+        return ResponseEntity.ok(products);
+    }
+
     @PostMapping
     public UserResponseDto create(@Valid @RequestBody CreateUserDto dto) {
         return userService.create(dto);
