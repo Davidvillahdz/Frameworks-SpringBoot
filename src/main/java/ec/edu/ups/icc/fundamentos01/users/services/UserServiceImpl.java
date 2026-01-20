@@ -8,6 +8,8 @@ import ec.edu.ups.icc.fundamentos01.products.repositories.ProductRepository;
 import ec.edu.ups.icc.fundamentos01.users.dtos.*;
 import ec.edu.ups.icc.fundamentos01.users.entities.User;
 import ec.edu.ups.icc.fundamentos01.users.repositories.UserRepository;
+import org.springframework.transaction.annotation.Transactional;
+
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -116,5 +118,19 @@ public class UserServiceImpl implements UserService {
                     }).toList();
         }
         return dto;
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<ProductResponseDto> getProductsByUserIdWithFilters(Long userId, String name, Double minPrice,
+            Double maxPrice, Long categoryId) {
+        if (!userRepository.existsById(userId)) {
+            throw new NotFoundException("Usuario no encontrado con ID: " + userId);
+        }
+        List<ProductEntity> products = productRepository.findByOwnerWithFilter(
+                userId, name, minPrice, maxPrice, categoryId);
+        return products.stream()
+                .map(this::mapProductToDto)
+                .toList();
     }
 }
